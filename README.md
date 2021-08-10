@@ -61,7 +61,7 @@ Please read the file "mac-instructions" for a more detailed guide on what to do.
 A signed version that does not cause these warnings should be available soon. 
 
 # Notes
-More documentation is available in the "documentation" folder. 
+More documentation is available in the "docs" folder. 
 Please create an issue in this Github repo if there are any problems. 
 
 
