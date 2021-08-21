@@ -1,7 +1,7 @@
 # Java Application to Calculate Bilayer Deformation Energy 
 This is a desktop application which calculates the difference in bilayer deformations energies between two proteins states with different lengths. 
 Below is a screenshot of the program on Windows: 
-![Screenshot of the app on Windows](https://github.com/shirley-pu/andersen/blob/main/curvature-screenshot.png?raw=true)
+![Screenshot of the app on Windows](https://github.com/shirley-pu/andersen/blob/main/program-screenshot.png?raw=true)
 
 This application is based on the research of the Olaf S. Andersen lab at Weill Cornell Medicine: 
 https://physiology.med.cornell.edu/faculty/andersen/lab/
@@ -22,6 +22,10 @@ Download them here: https://github.com/fxcoudert/gfortran-for-macOS/releases
 ### 64-bit 
 Download the .zip file 'java-app-win-64'. 
 Extract the files.
+
+You can click on the curvature.bat file to run the program.
+
+Alternately: 
 Open Command Prompt and type the following commands (Press ENTER after each line). 
 ```
 cd Downloads\java-app-win-64
@@ -48,6 +52,8 @@ cd Downloads\java-app-win-64-dll2
 ## Mac 
 The current version is for 64 bit machines. 
 
+You can run the program by clicking the curvature.sh file. 
+Alternately:
 Open Terminal and type the following commands (Press ENTER after each line). 
 
 ```
