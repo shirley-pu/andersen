@@ -1,5 +1,6 @@
 /*
  * Created on Jul 20, 2004
+ * Last modified on Feb 10, 2022
  */
 package edu.oa.curvature;
 
@@ -10,7 +11,7 @@ import JSci.maths.Complex;
 /**
  * Program that calculates and plots the energetics of inclusion-induced bilayer deformations.
  * 
- * Build on paper: (*) Energerics of Inclusion-Induced Bileayer Deformation,
+ * Build on paper: (*) Energetics of Inclusion-Induced Bilayer Deformations,
  *                     Claus Nielsen, Mark Goulian and Olaf S. Andersen
  *             and
  *                 (#) Simplified treatment of the effects of curvature (CN & OSA)     
@@ -20,6 +21,7 @@ import JSci.maths.Complex;
  * This class takes care of the main calculations and calls the external Bessel function
  * 
  * @author Helgi I. Ingolfsson, hii@cs.cornell.edu
+ * @author Shirley Pu, shp4017@med.cornell.edu
  */
 public class CurvatureSimplifiedTreatment {
 
@@ -36,7 +38,7 @@ public class CurvatureSimplifiedTreatment {
     private double ka;
     private double kc;
     private double s;
-    private double alfa; // Warning not the same alpha as in Nielsen, Goulian and Anersen
+    private double alpha; // Warning not the same alpha as in Nielsen, Goulian and Andersen
     private double landa; 
     private Complex a1;
     private Complex a2;
@@ -45,10 +47,10 @@ public class CurvatureSimplifiedTreatment {
     /**
      * Set up all relevant parameters for curvature calculations and 
      * calculate the deformation free energy.
-     * Ref paper: * Energerics of Inclusion-Induced Bilayer Deformation,
+     * Ref paper: * Energetics of Inclusion-Induced Bilayer Deformations,
      *              Claus Nielsen, Mark Goulian and Olaf S. Andersen
      *            # Simplified treatment of the effects of curvature (CN & OSA)
-     *            $ Inclusion-Induced Bilayer Deformation: Effects of Monolayer Equilibrium curvature 
+     *            $ Inclusion-Induced Bilayer Deformations: Effects of Monolayer Equilibrium Curvature 
      *              Clause Nielsen and Olaf S. Andersen
      * @param d0
      * @param u0
@@ -57,7 +59,7 @@ public class CurvatureSimplifiedTreatment {
      * @param ka
      * @param kc
      * @param s  A value of Double.NaN, means calculate smin 
-     * @throws Exception if Bessel function fails or free energy has a none zero imag. part
+     * @throws Exception if Bessel function fails or free energy has a non zero imag. part
      */
     public CurvatureSimplifiedTreatment(double d0, double u0, double r0, double c0, double ka, double kc, double s) throws Exception {
         this.d0 = d0;
@@ -71,8 +73,8 @@ public class CurvatureSimplifiedTreatment {
     	// Formula (4)#
         landa = Math.pow(( (this.d0 * this.d0 * this.kc) / this.ka), (1.0 / 4.0));
 
-        // Formula (5)#, Warning here alfa is alfa in # not in *
-        alfa = 2 * Math.PI * this.r0 * this.kc;
+        // Formula (5)#, Warning here alpha is alpha in # not in *
+        alpha = 2 * Math.PI * this.r0 * this.kc;
 
         // Define temp vars
         Complex temp1 = null;
@@ -105,7 +107,7 @@ public class CurvatureSimplifiedTreatment {
 		a2 = f2.multiply(this.kc / this.r0);
 		a3 = f3.multiply(this.kc);
 		
-		// use Smin. Calculate Smin from, Formula (6)#
+		// use Smin. Calculate Smin from Formula (6)#
 		if (Double.isNaN(s)) {
 			this.s = calcSmin();
 		}
@@ -117,11 +119,11 @@ public class CurvatureSimplifiedTreatment {
         Complex temp2 = null;
     	
         // Calculate Smin, Formula (6)#
-    	temp1 = a2.multiply(u0).addReal(alfa * c0);
+    	temp1 = a2.multiply(u0).addReal(alpha * c0);
 		temp2 = a3.multiply(-2.0);
 		Complex comSmin = temp1.divide(temp2);
 		if (Math.abs(comSmin.imag()) > imagErrorThreshold) {
-			throw new Exception("Warning Smin has a none zero imag. part of = " + comSmin.imag());
+			throw new Exception("Warning Smin has a non zero imag. part of = " + comSmin.imag());
 		}
 		return comSmin.real();
     }
@@ -141,9 +143,9 @@ public class CurvatureSimplifiedTreatment {
 		temp2 = a2.multiply(s * u0);
 		temp3 = a3.multiply(s * s);
 	
-		Complex res = temp1.add(temp2).add(temp3).addReal(alfa * s * c0);
+		Complex res = temp1.add(temp2).add(temp3).addReal(alpha * s * c0);
 		if (Math.abs(res.imag()) > imagErrorThreshold) {
-			throw new Exception("Warning the free energy has a none zero imag. part of = " + res.imag());
+			throw new Exception("Warning the free energy has a non zero imag. part of = " + res.imag());
 		}
 		deltaGdef = res.real() / changeParams;	
 	    return deltaGdef;
@@ -174,7 +176,7 @@ public class CurvatureSimplifiedTreatment {
         temp1 = a1.subtract(temp2); 			// a1 - a2^2 / (4 * a3)
         
         if (Math.abs(temp1.imag()) > imagErrorThreshold) {
-			throw new Exception("Warning Hb has a none zero imag. part of = " + temp1.imag());
+			throw new Exception("Warning Hb has a non zero imag. part of = " + temp1.imag());
 		}
         double varHb = temp1.real() / changeParams;
 		return varHb;
@@ -194,7 +196,7 @@ public class CurvatureSimplifiedTreatment {
         temp2 = temp1.divide(a3); 						// - a2 * pi * Kc * r0 / a3
  		
         if (Math.abs(temp2.imag()) > imagErrorThreshold) {
-			throw new Exception("Warning Hx has a none zero imag. part of = " + temp2.imag());
+			throw new Exception("Warning Hx has a non zero imag. part of = " + temp2.imag());
 		}
         double varHx = temp2.real() / changeParams;
 		return varHx;
@@ -214,7 +216,7 @@ public class CurvatureSimplifiedTreatment {
         temp2 = temp1.divide(a3); 									 	   // - (pi * Kc * r0)^2 / a3
  	
         if (Math.abs(temp2.imag()) > imagErrorThreshold) {
-			throw new Exception("Warning Hc has a none zero imag. part of = " + temp2.imag());
+			throw new Exception("Warning Hc has a non zero imag. part of = " + temp2.imag());
 		}
         double varHc = temp2.real() / changeParams;
 		return varHc;
@@ -226,7 +228,7 @@ public class CurvatureSimplifiedTreatment {
      */
     public double getA1() throws Exception {
          if (Math.abs(a1.imag()) > imagErrorThreshold) {
-			throw new Exception("Warning a1 has a none zero imag. part of = " + a1.imag());
+			throw new Exception("Warning a1 has a non zero imag. part of = " + a1.imag());
 		}
 		return a1.real();
 	}
@@ -237,7 +239,7 @@ public class CurvatureSimplifiedTreatment {
      */
     public double getA2() throws Exception {
          if (Math.abs(a2.imag()) > imagErrorThreshold) {
-			throw new Exception("Warning a2 has a none zero imag. part of = " + a2.imag());
+			throw new Exception("Warning a2 has a non zero imag. part of = " + a2.imag());
 		}
 		return a2.real();
 	}
@@ -248,7 +250,7 @@ public class CurvatureSimplifiedTreatment {
      */
     public double getA3() throws Exception {
          if (Math.abs(a3.imag()) > imagErrorThreshold) {
-			throw new Exception("Warning a3 has a none zero imag. part of = " + a3.imag());
+			throw new Exception("Warning a3 has a non zero imag. part of = " + a3.imag());
 		}
 		return a3.real();
 	}
