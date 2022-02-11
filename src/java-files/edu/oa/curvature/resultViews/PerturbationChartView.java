@@ -12,10 +12,8 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.Legend;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.XYSeries;
 import org.jfree.data.XYSeriesCollection;
-
 
 import edu.oa.curvature.utils.Resources;
 
@@ -62,7 +60,6 @@ public class PerturbationChartView extends ResultView {
 											   false);
         chart.setBackgroundPaint((new JPanel()).getBackground());
         chart.getLegend().setAnchor(Legend.EAST);
-
         chartPanel = new ChartPanel(chart);
         
         perturbationName = Resources.getString(panelName + Resources.X_PERTURBATIONNAME);
