@@ -1,5 +1,6 @@
 /*
  * Created on Jul 20, 2004
+ * Last modified on Feb 10, 2022 
  */
 package edu.oa.curvature;
 
@@ -10,8 +11,8 @@ import JSci.maths.Complex;
 /**
  * Program that calculates and plots the energetics of inclusion-induced bilayer deformations.
  * 
- * Build on paper: (#) Claus Nielsen, Mark Goulian and Olaf S. Andersen. (1998)
- *                     Energerics of Inclusion-Induced Bileayer Deformation.
+ * Built on paper: (#) Claus Nielsen, Mark Goulian and Olaf S. Andersen. (1998)
+ *                     Energetics of Inclusion-Induced Bilayer Deformations.
  *                     Biophysical Journal, 74:1966-1983 
  *             and    
  *                 ($) Claus Nielsen and Olaf S. Andersen. (2000)
@@ -28,7 +29,7 @@ import JSci.maths.Complex;
  *  SD  := Splay-distortion
  *  ST  := Surface tension
  * 
- * - This program uses a properties file (curvature.properties) which has to be in class path. 
+ * - This program uses a properties file (curvature.properties) which has to be in the class path. 
  * - This class takes care of the main calculations and calls the external Bessel function
  * 
  * @author Helgi I. Ingolfsson, hii@cs.cornell.edu
@@ -36,7 +37,7 @@ import JSci.maths.Complex;
 public class Curvature {
 
     // Parameter to convert between units (not in paper)
-    public static final double changeParams = 4.11E-11;
+    public static final double changeParams = 4.114;
     // If imag. part of complex result is higher then this threshold then report error
     private double imagErrorThreshold =  Resources.getDouble(Resources.IMAGERRORTHRESHOLD);
 
@@ -55,7 +56,7 @@ public class Curvature {
     private double kg;
     private double s;
     private double c0;
-    private double alfa;
+    private double alpha;
     private double gamma;
     private double beta;
 
@@ -69,30 +70,31 @@ public class Curvature {
      * @param ka
      * @param kc
      * @param kg
-     * @param alfa
+     * @param alpha
      * @param s	
      * @param c0
-     * @throws Exception if Bessel function fails or free energy has a none zero imag. part
+     * @throws Exception if Bessel function fails or free energy has a non zero imag. part
      */
-    public Curvature(double d0, double u0, double r0, double ka, double kc, double kg, double alfa, double s, double c0) throws Exception {
+    public Curvature(double d0, double u0, double r0, double ka, double kc, double kg, double alpha, double s, double c0) throws Exception {
         this.d0 = d0;
         this.u0 = u0;
         this.r0 = r0;
         this.ka = ka;
         this.kc = kc;
         this.kg = kg;
-        this.alfa = alfa;
+        this.alpha = alpha;
         this.s = s;
         this.c0 = c0;
 
         // Formula #(7)
-        gamma = this.alfa / this.kc;
-        beta = (4 * this.ka) / (this.d0 * this.d0 * this.kc); // Node correction ka = 4ka
+        // Note gamma here is alpha in the Energetics of Inclusion-Induced Bilayer Deformation paper
+        gamma = this.alpha / this.kc;
+        beta = (4 * this.ka) / (this.d0 * this.d0 * this.kc); // Note correction ka = 4ka
 
         /*
          // Print params to standard out
          System.out.println("Values d0 = "+d0+", l = "+l+", r0 = "+r0+", c0 = "+c0+", ka = "+ka+", kc = "+kc
-         +", alfa = "+alfa+", gamma = "+gamma+", beta = "+beta+", u0 = "+u0+", s = "+s+", c0 = "+c0);
+         +", alpha = "+alpha+", gamma = "+gamma+", beta = "+beta+", u0 = "+u0+", s = "+s+", c0 = "+c0);
          */
 
         // Calc k+ and k- , Formula #(9)
@@ -116,54 +118,54 @@ public class Curvature {
         temp = temp.add(((Ap.multiply(kp.multiply(kp2)).multiply(Kkpr0[1])).add(An.multiply(kn.multiply(kn2)).multiply(Kknr0[1]))).multiply(u0));
         temp = temp.addReal(gamma * this.u0 * this.s);
         Complex res = temp.multiply(-Math.PI * this.r0 * this.kc);
-        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Error the free energy has a none zero imag. part of = " + res.imag()); }
+        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Error the free energy has a non zero imag. part of = " + res.imag()); }
         deltaGdef_old = res.real() / changeParams;
     }   
 
     /**
      * Calculate u(r)
-     * Ref paper: Energerics of Inclusion-Induced Bileayer Deformation,
+     * Ref paper: Energetics of Inclusion-Induced Bilayer Deformations,
      *            Claus Nielsen, Mark Goulian and Olaf S. Andersen
      * @param r Radical distance from inclusion symmetry axis
      * @return Monolayer deformation at distance r from inclusion symmetry axis
-     * @throws Exception if Bessel function fails or result has a none zero imag part.
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
      */
     public double getU(double r) throws Exception {
         // Formula #(10)
         Complex[] kPosArray = BesselkJINI.getBesselK(kp.multiply(r));
         Complex[] kNegArray = BesselkJINI.getBesselK(kn.multiply(r));
         Complex res = (Ap.multiply(kPosArray[0])).add(An.multiply(kNegArray[0]));
-        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Warning u(" + r + ") has a none zero imag. part of = " + res.imag()); }
+        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Warning u(" + r + ") has a non zero imag. part of = " + res.imag()); }
         return res.real();
     }
 
     /**
      * Calculate u'(r)
-     * Ref paper: Energerics of Inclusion-Induced Bileayer Deformation,
+     * Ref paper: Energetics of Inclusion-Induced Bilayer Deformations,
      *            Claus Nielsen, Mark Goulian and Olaf S. Andersen
      * @param r Radical distance from inclusion symmetry axis
      * @return Monolayer deformation at distance r from inclusion symmetry axis
-     * @throws Exception if Bessel function fails or result has a none zero imag part.
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
      */
     public double getdU(double r) throws Exception {
         // Formula #(11)b
         Complex[] kPosArray = BesselkJINI.getBesselK(kp.multiply(r));
         Complex[] kNegArray = BesselkJINI.getBesselK(kn.multiply(r));
         Complex res = (Ap.multiply(kp).multiply(kPosArray[1])).add(An.multiply(kn).multiply(kNegArray[1]));
-        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Warning u(" + r + ") has a none zero imag. part of = " + res.imag()); }
+        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Warning u(" + r + ") has a non zero imag. part of = " + res.imag()); }
         return -1 * res.real();
     }
 
     
     /**
      * Calculate u(r) for a range starting at "startR" and ending at "stopR" with interval "interval"
-     * Ref paper: Energerics of Inclusion-Induced Bileayer Deformation,
+     * Ref paper: Energetics of Inclusion-Induced Bilayer Deformations,
      *            Claus Nielsen, Mark Goulian and Olaf S. Andersen
      * @param startR Start value
      * @param startR Stop value
      * @param interval Interval value
      * @return an array of [x, u(x)] values
-     * @throws Exception if Bessel function fails or result has a none zero imag part.
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
      */
     public double[][] getUforRange(double startR, double stopR, double interval) throws Exception {
         if (startR > stopR) { throw new Exception("startR must be smaller than stopR"); }
@@ -182,11 +184,11 @@ public class Curvature {
 
     /**
      * Calculate deltaGce(r)
-     * Ref paper: Energerics of Inclusion-Induced Bileayer Deformation,
+     * Ref paper: Energerics of Inclusion-Induced Bilayer Deformation,
      *            Claus Nielsen, Mark Goulian and Olaf S. Andersen
      * @param r Radical distance from inclusion symmetry axis
      * @return energy component corresponding to the compression-expansion
-     * @throws Exception if Bessel function fails or result has a none zero imag part.
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
      */
     public double getDeltaGce(double r) throws Exception {
         // Formula #(16a) and #(10)
@@ -195,14 +197,14 @@ public class Curvature {
     }
 
     /**
-     * Calculate seltaGce(r) for a range starting at "startR" and ending at "stopR" with interval "interval"
-     * Ref paper: Energerics of Inclusion-Induced Bileayer Deformation,
+     * Calculate deltaGce(r) for a range starting at "startR" and ending at "stopR" with interval "interval"
+     * Ref paper: Energerics of Inclusion-Induced Bilayer Deformation,
      *            Claus Nielsen, Mark Goulian and Olaf S. Andersen
      * @param startR Start value
      * @param startR Stop value
      * @param interval Interval value
-     * @return an array of [x, seltaGce(x)] values
-     * @throws Exception if Bessel function fails or result has a none zero imag part.
+     * @return an array of [x, deltaGce(x)] values
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
      */
     public double[][] getDeltaGceforRange(double startR, double stopR, double interval) throws Exception {
         if (startR > stopR) { throw new Exception("startR must be smaller than stopR"); }
@@ -221,11 +223,11 @@ public class Curvature {
 
     /**
      * Calculate deltaGsd(r) ( bad aproximation )
-     * Ref paper: Energerics of Inclusion-Induced Bileayer Deformation,
+     * Ref paper: Energetics of Inclusion-Induced Bilayer Deformation,
      *            Claus Nielsen, Mark Goulian and Olaf S. Andersen
      * @param r Radical distance from inclusion symmetry axis
      * @return energy component corresponding to the splay-distortion
-     * @throws Exception if Bessel function fails or result has a none zero imag part.
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
      */
     public double getDeltaGsd(double r) throws Exception {
         // Formula #(16b), #(8) and #(A13)
@@ -234,19 +236,19 @@ public class Curvature {
         Complex temp1 = kp2.multiply(Ap.multiply(kPosArray[0]));
         Complex temp2 = kn2.multiply(An.multiply(kNegArray[0]));
         Complex res = (temp1.add(temp2)).pow(2.0).multiply(Math.PI * r * kc);
-        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Warning deltaGsd(" + r + ") has a none zero imag. part of = " + res.imag()); }
+        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Warning deltaGsd(" + r + ") has a non zero imag. part of = " + res.imag()); }
         return res.real() / changeParams;
     }
     
     /**
-     * Calculate seltaGsd(r) for a range starting at "startR" and ending at "stopR" with interval "interval"
-     * Ref paper: Energerics of Inclusion-Induced Bileayer Deformation,
+     * Calculate deltaGsd(r) for a range starting at "startR" and ending at "stopR" with interval "interval"
+     * Ref paper: Energetics of Inclusion-Induced Bilayer Deformation,
      *            Claus Nielsen, Mark Goulian and Olaf S. Andersen
      * @param startR Start value
      * @param startR Stop value
      * @param interval Interval value
-     * @return an array of [x, seltaGsd(x)] values
-     * @throws Exception if Bessel function fails or result has a none zero imag part.
+     * @return an array of [x, deltaGsd(x)] values
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
      */
     public double[][] getDeltaGsdforRange(double startR, double stopR, double interval) throws Exception {
         if (startR > stopR) { throw new Exception("startR must be smaller than stopR"); }
@@ -265,11 +267,11 @@ public class Curvature {
 
     /**
      * Calculate deltaGst(r)
-     * Ref paper: Energerics of Inclusion-Induced Bileayer Deformation,
+     * Ref paper: Energetics of Inclusion-Induced Bilayer Deformations,
      *            Claus Nielsen, Mark Goulian and Olaf S. Andersen
      * @param r Radical distance from inclusion symmetry axis
      * @return energy component corresponding to the surface tension
-     * @throws Exception if Bessel function fails or result has a none zero imag part.
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
      */
     public double getDeltaGst(double r) throws Exception {
         // Formula #(16c) and #(8)
@@ -277,20 +279,20 @@ public class Curvature {
         Complex[] kNegArray = BesselkJINI.getBesselK(kn.multiply(r));
         Complex temp1 = kp.multiply(Ap.multiply(kPosArray[1]));
         Complex temp2 = kn.multiply(An.multiply(kNegArray[1]));
-        Complex res = (temp1.add(temp2)).pow(2.0).multiply(Math.PI * r * alfa);
-        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Warning deltaGst(" + r + ") has a none zero imag. part of = " + res.imag()); }
+        Complex res = (temp1.add(temp2)).pow(2.0).multiply(Math.PI * r * alpha);
+        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Warning deltaGst(" + r + ") has a non zero imag. part of = " + res.imag()); }
         return res.real() / changeParams;
     }
 
     /**
-     * Calculate seltaGst(r) for a range starting at "startR" and ending at "stopR" with interval "interval"
-     * Ref paper: Energerics of Inclusion-Induced Bileayer Deformation,
+     * Calculate deltaGst(r) for a range starting at "startR" and ending at "stopR" with interval "interval"
+     * Ref paper: Energetics of Inclusion-Induced Bilayer Deformations,
      *            Claus Nielsen, Mark Goulian and Olaf S. Andersen
      * @param startR Start value
      * @param startR Stop value
      * @param interval Interval value
-     * @return an array of [x, seltaGst(x)] values
-     * @throws Exception if Bessel function fails or result has a none zero imag part.
+     * @return an array of [x, deltaGst(x)] values
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
      */
     public double[][] getDeltaGstforRange(double startR, double stopR, double interval) throws Exception {
         if (startR > stopR) { throw new Exception("startR must be smaller than stopR"); }
@@ -308,13 +310,13 @@ public class Curvature {
     }
 
     /**
-     * Calculate seltaGdef(r) out from the partial energys ce, sd and st
-     * Ref paper: Energerics of Inclusion-Induced Bileayer Deformation,
+     * Calculate deltaGdef(r) as the sum of the partial energies ce, sd, st, and mec
+     * Ref paper: Energetics of Inclusion-Induced Bilayer Deformations,
      *            Claus Nielsen, Mark Goulian and Olaf S. Andersen
-     * @param ceValues deltaGce energy's
-     * @param sdValues deltaGsd energy's
-     * @param stValues deltaGst energy's
-     * @return an array of [x, seltaGdef(x)] values
+     * @param ceValues deltaGce energies
+     * @param sdValues deltaGsd energies
+     * @param stValues deltaGst energies
+     * @return an array of [x, deltaGdef(x)] values
      */
     public double[][] getDeltaGdefforRange(double[][] ceValues, double[][] sdValues, double[][] stValues, double[][] mecValues) {
         double[][] retArray = new double[2][ceValues[0].length];
@@ -326,12 +328,12 @@ public class Curvature {
     }
     
     /**
-     * Calculate seltaGmec(r) for a range starting at "startR" and ending at "stopR" with interval "interval"
+     * Calculate deltaGmec(r) for a range starting at "startR" and ending at "stopR" with interval "interval"
      * @param startR Start value
      * @param startR Stop value
      * @param interval Interval value
-     * @return an array of [x, seltaGce(x)] values
-     * @throws Exception if Bessel function fails or result has a none zero imag part.
+     * @return an array of [x, deltaGmec(x)] values
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
      */
     public double[][] getDeltaGmecforRange(double startR, double stopR, double interval) throws Exception {
         if (startR > stopR) { throw new Exception("startR must be smaller than stopR"); }
@@ -351,8 +353,8 @@ public class Curvature {
     /**
      * Calculate deltaGmec(r)
      * @param r Radical distance from inclusion symmetry axis
-     * @return energy component corresponding to the surface tension
-     * @throws Exception if Bessel function fails or result has a none zero imag part.
+     * @return energy component corresponding to the c0 dependent term of the deformation free energy
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
      */
     public double getDeltaGmec(double r) throws Exception {
         // Formula $(7) and #(A13)
@@ -361,7 +363,7 @@ public class Curvature {
         Complex temp1 = kp2.multiply(Ap.multiply(kPosArray[0]));
         Complex temp2 = kn2.multiply(An.multiply(kNegArray[0]));
         Complex res = (temp1.add(temp2)).multiply(-2 * Math.PI * kc * c0 * r);
-        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Warning deltaGsd(" + r + ") has a none zero imag. part of = " + res.imag()); }
+        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Warning deltaGmec(" + r + ") has a non zero imag. part of = " + res.imag()); }
         return res.real() / changeParams;
     }
 
@@ -381,7 +383,7 @@ public class Curvature {
      * @return Returns the deltaGgc.
      */
     public double getDeltaGgc() {
-    	// Eq. $(A1), Note that kg is the Mean splay-distrotion modulus
+    	// Eq. $(A1), Note that kg is the Mean splay-distortion modulus
     	// and kg/kc is extimated to be less than 0.05 ($ see appendix)
 		double deltaGgc = ((Math.PI / 2) * kg * (s * s / (1 + (s * s)))) / changeParams; 
 		return deltaGgc;

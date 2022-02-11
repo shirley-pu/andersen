@@ -1,5 +1,6 @@
 /*
- * Originally created on Aug 13, 2004
+ * Created on Aug 13, 2004
+ * Last modified on Feb 10, 2022 
  */
 package edu.oa.curvature;
 
@@ -19,21 +20,24 @@ import edu.oa.curvature.utils.*;
 /**
  * Program that calculates and plots the energetics of inclusion-induced bilayer deformations.
  * 
- * Build on paper: Energetics of Inclusion-Induced Bilayer Deformation,
+ * Built on paper: Energetics of Inclusion-Induced Bilayer Deformations,
  *                 Claus Nielsen, Mark Goulian and Olaf S. Andersen
  *                
  * This program uses a properties file (curvature.properties) which has to be in the class path. 
  *                
  * This class contains all GUI elements and uses Curvature.java to calculate the energies 
+ * 
+ * -Note that the GUI only shows Hb, Hx, Hc, Perutrubation and Energy Coords for the first inclusion length l 
  *                 
  * @author Helgi I. Ingolfsson, hii@cs.cornell.edu 
+ * @author Shirley Pu, shp4017@med.cornell.edu
  */
 public class CurvatureGUI {
 
 	// Settings
 	private static final int paramBoxPixelSize = 180;
 
-	// Local varibales
+	// Local variables
 	private DoubleParam d0Param = null;
 	private DoubleParam lParam = null;
 	private DoubleParam r0Param = null;
@@ -49,7 +53,7 @@ public class CurvatureGUI {
 	private JRadioButton sConstrainedButton = null;
 	private JRadioButton sManualButton = null;
 	private JCheckBox onOffCheckBox=null;
-	private JCheckBox lipidBox=null;
+	private JComboBox lipidList=null;
 	private PerturbationChartView perturbationChartView = new PerturbationChartView();
 	private CoordinatesInfoView coordinatesInfoView = new CoordinatesInfoView();
 	private EnergyChartView energyChartView = new EnergyChartView();
@@ -57,7 +61,7 @@ public class CurvatureGUI {
 	private JPanel centerPanel = null;
 	private JPanel titlePanel = null;
 
-	//new parameters 
+	//Variables for second inclusion and difference in deltaGdef
 	private DoubleParam lParam_new=null;
 	private DoubleParam energyParam_new=null;
 	private DoubleParam energyParam_bilayer=null;
@@ -80,16 +84,16 @@ public class CurvatureGUI {
 		c0Param = DoubleParam.createParamFromResources("C0");
 		energyParam = DoubleParam.createParamFromResources("deltaGdef");
 		
-		//The difference between the parameters 
+		//deltaGdef for second inclusion and difference in deltaGdef
 		energyParam_new=DoubleParam.createParamFromResources("deltaGdef_new");
 		energyParam_bilayer=DoubleParam.createParamFromResources("deltaGbilayer");
 
-		//The coefficients
+		//The elastic H coefficients
 		HbParam=DoubleParam.createParamFromResources("Hb");
 		HxParam=DoubleParam.createParamFromResources("Hx");
 		HcParam=DoubleParam.createParamFromResources("Hc");
 
-		//The new l value 
+		//The length of the second inclusion
 		lParam_new = DoubleParam.createParamFromResources("lnew");
 		
 		// Title
@@ -99,7 +103,7 @@ public class CurvatureGUI {
 				new Insets(5, 11, 5, 10), 0, 0));
 
 		// Parameters
-		//Don't allow the calculated delta_Gdeformation to be editable
+		//Don't allow the calculated values to be editable
 		energyParam.textField.setEditable(false);
 		energyParam_new.textField.setEditable(false);
 		energyParam_bilayer.textField.setEditable(false);
@@ -132,7 +136,7 @@ public class CurvatureGUI {
 
 			public void actionPerformed(ActionEvent ae) {
 				sParam.textField.setEditable(true);
-				// Set to default value if value is none valid  
+				// Set to default value if value is not valid  
 				try {
 					sParam.getValue();
 				} catch (Exception e) {
@@ -141,65 +145,78 @@ public class CurvatureGUI {
 			}
 		});
 
+		// Make the sRelaxedButton default selected
+		sRelaxedButton.setSelected(true);
+
 		// Group the radio buttons.
 		ButtonGroup group = new ButtonGroup();
 		group.add(sRelaxedButton);
 		group.add(sConstrainedButton);
 		group.add(sManualButton);
 
-		// Make the Manual Default selected
-		sManualButton.setSelected(true);
-
-		int yCord = 0;
+		// Add input fields for parameters 
+		int yCoord = 0;
 		JPanel innerParamPanel = new JPanel(new GridBagLayout());
-		d0Param.addFieldsToPanel(innerParamPanel, yCord++);
-		lParam.addFieldsToPanel(innerParamPanel, yCord++);
-		lParam_new.addFieldsToPanel(innerParamPanel, yCord++);
-		r0Param.addFieldsToPanel(innerParamPanel, yCord++);
-		kaParam.addFieldsToPanel(innerParamPanel, yCord++);
-		kcParam.addFieldsToPanel(innerParamPanel, yCord++);
-		kgParam.addFieldsToPanel(innerParamPanel, yCord++);
-		alphaParam.addFieldsToPanel(innerParamPanel, yCord++);
-		rheadParam.addFieldsToPanel(innerParamPanel, yCord++);
-		c0Param.addFieldsToPanel(innerParamPanel, yCord++);
+		d0Param.addFieldsToPanel(innerParamPanel, yCoord++);
+		lParam.addFieldsToPanel(innerParamPanel, yCoord++);
+		lParam_new.addFieldsToPanel(innerParamPanel, yCoord++);
+		r0Param.addFieldsToPanel(innerParamPanel, yCoord++);
+		kaParam.addFieldsToPanel(innerParamPanel, yCoord++);
+		kcParam.addFieldsToPanel(innerParamPanel, yCoord++);
+		kgParam.addFieldsToPanel(innerParamPanel, yCoord++);
+		alphaParam.addFieldsToPanel(innerParamPanel, yCoord++);
+		rheadParam.addFieldsToPanel(innerParamPanel, yCoord++);
+		c0Param.addFieldsToPanel(innerParamPanel, yCoord++);
 
-		//checkbox for changing r0;
+		//checkbox for changing r0 to maintain constant volume
 		String checkBoxToolTip = Resources.getString("r0box_tooltip");
 		String checkBoxName = Resources.getString("r0box_name");
 		onOffCheckBox = new JCheckBox(Utils.setToHTML(checkBoxName));
 		onOffCheckBox.setToolTipText(Utils.setToHTML(checkBoxToolTip));
 		onOffCheckBox.setSelected(false);
 
-		//checkbox for changing to 22:1 lipid;
-		String lipid_checkBoxToolTip=Resources.getString("lipidbox_tooltip");
-		String lipid_checkBoxName=Resources.getString("lipidbox_name");
-		lipidBox= new JCheckBox(Utils.setToHTML(lipid_checkBoxName));
-		lipidBox.setToolTipText(Utils.setToHTML(lipid_checkBoxToolTip));
-		lipidBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				try {d0Param.setValue(Resources.getDouble("d0_switch"));}
-				catch(Exception e){}
-				try{kaParam.setValue(Resources.getDouble("Ka_switch"));}
-				catch(Exception e){}
-				try{kcParam.setValue(Resources.getDouble("Kc_switch"));}
-				catch(Exception e){}
+		//Drop down list for changing to 22:1 lipid parameters (different d0, Ka, Kc)
+		String [] lipidStrings = {Utils.setToHTML(Resources.getString("lipidc18" + Resources.X_NAME)), Utils.setToHTML(Resources.getString("lipidc22" + Resources.X_NAME)), Utils.setToHTML(Resources.getString("user" + Resources.X_NAME))};
+		JComboBox<String> lipidList= new JComboBox<String>(lipidStrings);
+		lipidList.setSelectedIndex(0);
+		lipidList.addActionListener(new ActionListener() {
+		
+			public void actionPerformed(ActionEvent ae){
+				JComboBox chosen= (JComboBox)ae.getSource();
+				String chosenLipid = (String)chosen.getSelectedItem();
+				if (chosenLipid.equals(Utils.setToHTML(Resources.getString("lipidc18" + Resources.X_NAME)))) {
+					try {d0Param.setDefault();}
+					catch(Exception e){}
+					try{kaParam.setDefault();}
+					catch(Exception e){}
+					try{kcParam.setDefault();}
+					catch(Exception e){}
+				} else if (chosenLipid.equals(Utils.setToHTML(Resources.getString("lipidc22" + Resources.X_NAME)))) {
+					try {d0Param.setValue(Resources.getDouble("d0_switch"));}
+					catch(Exception e){}
+					try{kaParam.setValue(Resources.getDouble("Ka_switch"));}
+					catch(Exception e){}
+					try{kcParam.setValue(Resources.getDouble("Kc_switch"));}
+					catch(Exception e){}
+				}
+				else{		
+				}
 			}
 		});
-		lipidBox.setSelected(false);
-
-		// Add buttons and checkBox
-		innerParamPanel.add(lipidBox, new GridBagConstraints(0, yCord++, 3, 1, 0.0, 0.0, GridBagConstraints.WEST,
+		
+		// Add buttons, checkbox, and lipid drop down list 
+		innerParamPanel.add(lipidList, new GridBagConstraints(0, yCoord++, 3, 1, 0.0, 0.0, GridBagConstraints.WEST,
 		GridBagConstraints.NONE, new Insets(0, 0, 0, 5), 0, 0));
-		innerParamPanel.add(onOffCheckBox, new GridBagConstraints(0, yCord++, 3, 1, 0.0, 0.0, GridBagConstraints.WEST,
+		innerParamPanel.add(onOffCheckBox, new GridBagConstraints(0, yCoord++, 3, 1, 0.0, 0.0, GridBagConstraints.WEST,
 		GridBagConstraints.NONE, new Insets(0, 0, 0, 5), 0, 0));
-		innerParamPanel.add(sRelaxedButton, new GridBagConstraints(0, yCord++, 3, 1, 0.0, 0.0, GridBagConstraints.WEST,
+		innerParamPanel.add(sRelaxedButton, new GridBagConstraints(0, yCoord++, 3, 1, 0.0, 0.0, GridBagConstraints.WEST,
 				GridBagConstraints.NONE, new Insets(0, 0, 0, 5), 0, 0));
-		innerParamPanel.add(sConstrainedButton, new GridBagConstraints(0, yCord++, 3, 1, 0.0, 0.0, GridBagConstraints.WEST,
+		innerParamPanel.add(sConstrainedButton, new GridBagConstraints(0, yCoord++, 3, 1, 0.0, 0.0, GridBagConstraints.WEST,
 				GridBagConstraints.NONE, new Insets(0, 0, 0, 5), 0, 0));
-		innerParamPanel.add(sManualButton, new GridBagConstraints(0, yCord++, 3, 1, 0.0, 0.0, GridBagConstraints.WEST,
+		innerParamPanel.add(sManualButton, new GridBagConstraints(0, yCoord++, 3, 1, 0.0, 0.0, GridBagConstraints.WEST,
 				GridBagConstraints.NONE, new Insets(0, 0, 0, 5), 0, 0));
 
-		sParam.addFieldsToPanel(innerParamPanel, yCord++);
+		sParam.addFieldsToPanel(innerParamPanel, yCoord++);
 
 		JButton defaultButton = new JButton(Resources.getString("Default" + Resources.X_LABEL));
 		defaultButton.setMnemonic(defaultButton.getText().charAt(0));
@@ -237,13 +254,13 @@ public class CurvatureGUI {
 		paramPanel.add(Box.createHorizontalStrut(0), new GridBagConstraints(3, 0, 1, 4, 1.0, 1.0, GridBagConstraints.CENTER,
 				GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 
-		//New Gdef 
+		//DeltaGdef for second inclusion
 		energyParam_new.addFieldsToPanel(paramPanel,4);
 
-		// Gbilayer
+		// deltaGbilayer
 		energyParam_bilayer.addFieldsToPanel(paramPanel,5);
 	
-		// Coefficients
+		// H coefficients
 		HbParam.addFieldsToPanel(paramPanel,6);
 		HxParam.addFieldsToPanel(paramPanel,7);
 		HcParam.addFieldsToPanel(paramPanel,8);
@@ -266,61 +283,59 @@ public class CurvatureGUI {
 		calcCurvature();
 	}
 
-		// Calculate deltaG_bilayer (difference between both delta_Gdef)
-			// Get the difference in curvature
-			//Make a method? 
-		public double deltaG_bilayer() throws Exception{
-			double d0 = d0Param.getValue();
-			double l = lParam.getValue();
-			double l_new=lParam_new.getValue();
-			double r0 = r0Param.getValue();
-			double r0_new = Double.NaN;
-			double ka = kaParam.getValue();
-			double kc = kcParam.getValue();
-			double kg = kgParam.getValue();
-			// Note gamma here is alfa in the Energetics of Inclusion-Induced Bilayer Deformation paper
-			double alpha = alphaParam.getValue();
-			// Monolayer deformation at inclusion-bilayer boundary, Formula (5c) in paper:
-			// Energerics of Inclusion-Induced Bileayer Deformation, Claus Nielsen, Mark Goulian and Olaf S. Andersen
-			
-			//two different u0;
-			double u0=(d0-l)/2.0;
-			double u0_new=(d0-l_new)/2.0;
-			double rhead = rheadParam.getValue();
-			double c0 = c0Param.getValue();
-			double s = Double.NaN;
-			double s_new=Double.NaN;
-
-			if (this.onOffCheckBox.isSelected()) {
-				r0_new = (Math.pow(r0,2.0) * l_new) / l;
-			  } else {
-				r0_new = r0Param.getValue();
-			  } 
+	// Calculate deltaG_bilayer (difference between both delta_Gdef) 
+	public double deltaG_bilayer() throws Exception{
+		double d0 = d0Param.getValue();
+		double l = lParam.getValue();
+		double l_new=lParam_new.getValue();
+		double r0 = r0Param.getValue();
+		double r0_new = Double.NaN;
+		double ka = kaParam.getValue();
+		double kc = kcParam.getValue();
+		double kg = kgParam.getValue();
+		// Note gamma here is alpha in the Energetics of Inclusion-Induced Bilayer Deformation paper
+		double alpha = alphaParam.getValue();
+		// Monolayer deformation at inclusion-bilayer boundary, Formula (5c) in paper:
+		// Energerics of Inclusion-Induced Bileayer Deformation, Claus Nielsen, Mark Goulian and Olaf S. Andersen
 		
-			if (sRelaxedButton.isSelected()) {
-				// Use s = Smin, get c0 to calc Smin, numerically finds s_min
-				// Looks in range [-2,2] with error tol of 1E-5
-				s = CurvatureFMin.calculateSmin(d0, u0, r0, ka, kc, kg, alpha, c0);
-				s_new= CurvatureFMin.calculateSmin(d0, u0_new, r0_new, ka, kc, kg, alpha, c0);	
-			} else if (sConstrainedButton.isSelected()) {
-				// Use s = R(Head) * C0
-				s = rhead * c0;
-				s_new=s;
+		//two different u0;
+		double u0=(d0-l)/2.0;
+		double u0_new=(d0-l_new)/2.0;
+		double rhead = rheadParam.getValue();
+		double c0 = c0Param.getValue();
+		double s = Double.NaN;
+		double s_new=Double.NaN;
+
+		if (onOffCheckBox.isSelected()) {
+			r0_new = (Math.pow(r0,2.0) * l_new) / l;
 			} else {
-				// Use user specified s
-				s = sParam.getValue();
-				s_new=s;
-			}
-			sParam.setValue(s);
-
-			Curvature c1= new Curvature(d0,u0,r0,ka,kc,kg,alpha,s,c0);
-			Curvature c2=new Curvature(d0,u0_new,r0,ka,kc,kg,alpha,s_new,c0);
-				
-			double deltaG= c1.getDeltaGdef() - c2.getDeltaGdef();
-
-			return deltaG; 
-
+			r0_new = r0Param.getValue();
+			} 
+	
+		if (sRelaxedButton.isSelected()) {
+			// Use s = Smin, get c0 to calc Smin, numerically finds s_min
+			// Looks in range [-2,2] with error tol of 1E-5
+			s = CurvatureFMin.calculateSmin(d0, u0, r0, ka, kc, kg, alpha, c0);
+			s_new= CurvatureFMin.calculateSmin(d0, u0_new, r0_new, ka, kc, kg, alpha, c0);	
+		} else if (sConstrainedButton.isSelected()) {
+			// Use s = R(Head) * C0
+			s = rhead * c0;
+			s_new=s;
+		} else {
+			// Use user specified s
+			s = sParam.getValue();
+			s_new=s;
 		}
+		sParam.setValue(s);
+
+		Curvature c1= new Curvature(d0,u0,r0,ka,kc,kg,alpha,s,c0);
+		Curvature c2=new Curvature(d0,u0_new,r0,ka,kc,kg,alpha,s_new,c0);
+			
+		double deltaG= c1.getDeltaGdef() - c2.getDeltaGdef();
+
+		return deltaG; 
+
+	}
 
 
 	/**
@@ -345,16 +360,15 @@ public class CurvatureGUI {
 			double ka = kaParam.getValue();
 			double kc = kcParam.getValue();
 			double kg = kgParam.getValue();
-			// Note gamma here is alfa in the Energetics of Inclusion-Induced Bilayer Deformation paper
 			double alpha = alphaParam.getValue();
 			// Monolayer deformation at inclusion-bilayer boundary, Formula (5c) in paper:
-			// Energerics of Inclusion-Induced Bileayer Deformation, Claus Nielsen, Mark Goulian and Olaf S. Andersen
+			// Energetics of Inclusion-Induced Bilayer Deformations, Claus Nielsen, Mark Goulian and Olaf S. Andersen
 			double u0 = (d0 - l) / 2.0;
 			double rhead = rheadParam.getValue();
 			double c0 = c0Param.getValue();
 			double s = Double.NaN;
 
-			//values for l2 
+			//values for inclusion 2
 			double l_new=lParam_new.getValue();
 			double u0_new=(d0-l_new)/2.0;
 			double s_new=Double.NaN;
@@ -410,13 +424,6 @@ public class CurvatureGUI {
 			// Want r0 to adjust when l is adjusted for volume constant 
 			// double deltaGdef=curvature_new.getDeltaGdef();
 
-			// Curvature simplified for Hb, Hx, Hc
-			CurvatureSimplifiedTreatment curvatureSimpl = new CurvatureSimplifiedTreatment(d0, u0, r0, c0, (ka * 4), kc, s);
-			// alfa is different (but not used as input?)
-			HbParam.setValue(curvatureSimpl.getHb());
-			HxParam.setValue(curvatureSimpl.getHx());
-			HcParam.setValue(curvatureSimpl.getHc());
-
 			// Update energy label
 			energyParam.setValue(deltaGdef);
 
@@ -426,15 +433,19 @@ public class CurvatureGUI {
 			double deltaG_change=deltaG_bilayer();
 			energyParam_bilayer.setValue(deltaG_change);
 
+			// Curvature simplified used to obtain Hb, Hx, Hc
+			CurvatureSimplifiedTreatment curvatureSimpl = new CurvatureSimplifiedTreatment(d0, u0, r0, c0, (ka * 4), kc, s);
+			HbParam.setValue(curvatureSimpl.getHb());
+			HxParam.setValue(curvatureSimpl.getHx());
+			HcParam.setValue(curvatureSimpl.getHc());
+
+			// Used to clear the chart before inclusion 1 is changed
 			int clear= 1;
 			int noclear= 0;
 
 			// Update perturbation chart pane
 			perturbationChartView.setChartData(monolayerWidth, inclusionHalfHeight, r0, gridValues,clear);
 			perturbationChartView.setChartData(monolayerWidth_new,inclusionHalfHeight_new,r0_new,gridValues_new,noclear);
-			// Update it with the new r0 and gridValues (getUforRange)
-			// Have another variable called 'gridValues_new'? 
-			// But we want to see the old deformation and the new deformation
 			
 			// Update energy pane
 			double[][] ceValues = curvature.getDeltaGceforRange(r0, maxXvalue, graphInterval);
@@ -491,14 +502,11 @@ public class CurvatureGUI {
 			// Display error
 			JOptionPane.showMessageDialog(centerPanel.getParent(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 
-			//*CHANGE THIS TO ADD IN ENERGyPARAM_NEW TOO!*
-
 			// Clear Data
 			try {
 				energyParam.setValue(0.0);
-				//if (onOffCheckBox.isSelected()) {
-				//	sParam.setDefultOffValue();
-				//} 
+				energyParam_new.setValue(0.0);
+				energyParam_bilayer.setValue(0.0);
 			} catch (Exception ex) {
 				// Do nothing
 			}
@@ -518,9 +526,7 @@ public class CurvatureGUI {
 	public void setDefault() {
 		d0Param.setDefault();
 		lParam.setDefault();
-		//
 		lParam_new.setDefault();
-		//
 		r0Param.setDefault();
 		kaParam.setDefault();
 		kcParam.setDefault();
@@ -529,8 +535,8 @@ public class CurvatureGUI {
 		rheadParam.setDefault();
 		sParam.setDefault();
 		c0Param.setDefault();
-		sManualButton.setSelected(true);
-		//setCheckBoxSelection(false);
+		onOffCheckBox.setSelected(false);
+		sRelaxedButton.setSelected(true);
 	}
 
 }
