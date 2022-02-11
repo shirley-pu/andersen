@@ -23,7 +23,7 @@ Download them here: https://github.com/fxcoudert/gfortran-for-macOS/releases
 Download the .zip file 'java-app-win-64'. 
 Extract the files.
 
-You can click on the curvature.bat file to run the program.
+You can click on the RunApp.bat file to run the program.
 
 Alternately: 
 Open Command Prompt and type the following commands (Press ENTER after each line). 
@@ -52,7 +52,7 @@ cd Downloads\java-app-win-64-dll2
 ## Mac 
 The current version is for 64 bit machines. 
 
-You can run the program by clicking the curvature.sh file. 
+You can run the program by clicking the RunApp.sh file. 
 Alternately:
 Open Terminal and type the following commands (Press ENTER after each line). 
 
