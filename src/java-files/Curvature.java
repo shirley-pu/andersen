@@ -388,6 +388,47 @@ public class Curvature {
 		double deltaGgc = ((Math.PI / 2) * kg * (s * s / (1 + (s * s)))) / changeParams; 
 		return deltaGgc;
     }
+
+        /**
+     * Calculate c1+c2 (curvature) for a range starting at "startR" and ending at "stopR" with interval "interval"
+     * @param startR Start value
+     * @param startR Stop value
+     * @param interval Interval value
+     * @return an array of [x, curvature(x)] values
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
+     */
+    public double[][] getCurvatureforRange(double startR, double stopR, double interval) throws Exception {
+        if (startR > stopR) { throw new Exception("startR must be smaller than stopR"); }
+        int size = (int) Math.floor((stopR - startR) / interval);
+        double[][] retArray = new double[2][size];
+        for (int i = 0; i < retArray[0].length; i++) {
+            if (i == 0) {
+                retArray[0][i] = startR;
+            } else {
+                retArray[0][i] = retArray[0][i - 1] + interval;
+            }
+            retArray[1][i] = getCurvature(retArray[0][i]);
+        }
+        return retArray;
+    }
+    
+    /**
+     * Calculate c1+c2 (curvature) for a given r
+     * @param r Radical distance from inclusion symmetry axis
+     * @return the curvature at a given r
+     * @throws Exception if Bessel function fails or result has a non zero imag part.
+     */
+    public double getCurvature(double r) throws Exception {
+        // c1+c2 from Formula $(7) 
+        Complex[] kPosArray = BesselkJINI.getBesselK(kp.multiply(r));
+        Complex[] kNegArray = BesselkJINI.getBesselK(kn.multiply(r));
+        Complex temp1 = kp2.multiply(Ap.multiply(kPosArray[0]));
+        Complex temp2 = kn2.multiply(An.multiply(kNegArray[0]));
+        Complex res = temp1.add(temp2);
+        if (Math.abs(res.imag()) > imagErrorThreshold) { throw new Exception("Warning deltaGmec(" + r + ") has a non zero imag. part of = " + res.imag()); }
+        return res.real() / changeParams;
+    }
+
     
     /**
      * Get the deformation free energy
