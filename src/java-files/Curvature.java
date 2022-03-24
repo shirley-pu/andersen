@@ -37,7 +37,7 @@ import JSci.maths.Complex;
 public class Curvature {
 
     // Parameter to convert between units (not in paper)
-    public static final double changeParams = 4.114;
+    public static final double changeParams = 4.11;
     // If imag. part of complex result is higher then this threshold then report error
     private double imagErrorThreshold =  Resources.getDouble(Resources.IMAGERRORTHRESHOLD);
 
@@ -388,7 +388,7 @@ public class Curvature {
 		double deltaGgc = ((Math.PI / 2) * kg * (s * s / (1 + (s * s)))) / changeParams; 
 		return deltaGgc;
     }
-
+    
         /**
      * Calculate c1+c2 (curvature) for a range starting at "startR" and ending at "stopR" with interval "interval"
      * @param startR Start value
@@ -419,7 +419,7 @@ public class Curvature {
      * @throws Exception if Bessel function fails or result has a non zero imag part.
      */
     public double getCurvature(double r) throws Exception {
-        // c1+c2 from Formula $(7) 
+        // c1+c2 from Formula$(7)
         Complex[] kPosArray = BesselkJINI.getBesselK(kp.multiply(r));
         Complex[] kNegArray = BesselkJINI.getBesselK(kn.multiply(r));
         Complex temp1 = kp2.multiply(Ap.multiply(kPosArray[0]));
@@ -429,7 +429,6 @@ public class Curvature {
         return res.real() / changeParams;
     }
 
-    
     /**
      * Get the deformation free energy
      * Node: this is only the CE, SD and ST parts (the one that depend on u(r))
