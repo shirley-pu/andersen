@@ -58,6 +58,7 @@ public class CurvatureGUI {
 	private CoordinatesInfoView coordinatesInfoView = new CoordinatesInfoView();
 	private EnergyChartView energyChartView = new EnergyChartView();
 	private EnergyCoordView energyCoordView = new EnergyCoordView();
+	private CurvatureCoordView curvatureCoordView = new CurvatureCoordView();
 	private JPanel centerPanel = null;
 	private JPanel titlePanel = null;
 
@@ -271,6 +272,7 @@ public class CurvatureGUI {
 		tabbedPane.addTab(coordinatesInfoView.getTitle(), null, coordinatesInfoView.getPanel(), coordinatesInfoView.getInfo());
 		tabbedPane.addTab(energyChartView.getTitle(), null, energyChartView.getPanel(), energyChartView.getInfo());
 		tabbedPane.addTab(energyCoordView.getTitle(), null, energyCoordView.getPanel(), energyCoordView.getInfo());
+		tabbedPane.addTab(curvatureCoordView.getTitle(), null, curvatureCoordView.getPanel(), curvatureCoordView.getInfo());
 
 		// Main Panel
 		centerPanel = new JPanel(new GridBagLayout());
@@ -306,7 +308,7 @@ public class CurvatureGUI {
 		double s = Double.NaN;
 		double s_new=Double.NaN;
 
-		if (onOffCheckBox.isSelected()) {
+		if (this.onOffCheckBox.isSelected()) {
 			r0_new = (Math.pow(r0,2.0) * l_new) / l;
 			} else {
 			r0_new = r0Param.getValue();
@@ -453,10 +455,14 @@ public class CurvatureGUI {
 			double[][] stValues = curvature.getDeltaGstforRange(r0, maxXvalue, graphInterval);
 			double[][] mecValues = curvature.getDeltaGmecforRange(r0, maxXvalue, graphInterval);
 			double[][] defValues = curvature.getDeltaGdefforRange(ceValues, sdValues, stValues, mecValues);
+			double[][] curvValues = curvature.getCurvatureforRange(r0,maxXvalue,graphInterval);
 			energyChartView.setChartData(ceValues, sdValues, stValues, mecValues, defValues);
 
 			// Update energy coord pane
 			energyCoordView.setCoordData(ceValues, sdValues, stValues, mecValues, defValues);
+
+			// Update curvature view 
+			curvatureCoordView.setCoordData(curvValues);
 
 			// Update coordinates and info pane
 			double deltaGcei = Utils.integrate(ceValues, graphInterval);
@@ -514,6 +520,7 @@ public class CurvatureGUI {
 			coordinatesInfoView.clearData();
 			energyChartView.clearData();
 			energyCoordView.clearData();
+			curvatureCoordView.clearData();
 
 			// Print error to standard error (remove if in applet) 
 			e.printStackTrace();
@@ -535,6 +542,7 @@ public class CurvatureGUI {
 		rheadParam.setDefault();
 		sParam.setDefault();
 		c0Param.setDefault();
+		lipidList.setSelectedIndex(0);
 		onOffCheckBox.setSelected(false);
 		sRelaxedButton.setSelected(true);
 	}
